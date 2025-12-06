@@ -1,9 +1,7 @@
 import sys
 import pathlib
+import pygame
 
-# When this file is executed directly, Python's import path is the script's
-# directory (the `bodies/` folder). Add the project root to `sys.path` so
-# sibling packages like `utils` can be imported.
 project_root = pathlib.Path(__file__).resolve().parents[1]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
@@ -169,3 +167,169 @@ class CelestialBody:
             font = pygame.font.Font(None, 20)
             text = font.render(self.name, True, (255, 255, 255))
             surface.blit(text, (screen_pos.x + screen_radius + 5, screen_pos.y - 10))
+            
+class Star(CelestialBody):
+    def __init__(self, name="Star", mass=1.989e30):
+        super().__init__(name, "star")
+        self.mass = mass
+        self.radius = 6.957e8  # solar radius
+        self.luminosity = 3.828e26  # watts
+        self.temperature = 5778  # kelvin
+        self.fixed_position = True
+        self.color = (255, 255, 100)  # yellow
+        
+    def update_properties(self):
+        """Update stellar properties based on mass (empirical relations)"""
+        self.luminosity = 3.828e26 * (self.mass / 1.989e30) ** 3.5
+        
+        if self.mass < 1.989e30:
+            self.radius = 6.957e8 * (self.mass / 1.989e30) ** 0.8
+        else:
+            self.radius = 6.957e8 * (self.mass / 1.989e30) ** 0.57
+
+class Planet(CelestialBody):
+    def __init__(self, name="Planet", mass=5.972e24):
+        super().__init__(name, "planet")
+        self.mass = mass
+        self.radius = 6.371e6  # earth radius
+        self.has_atmosphere = True
+        self.atmosphere_thickness = 100000  # meters
+        self.surface_gravity = 9.81  # m/s^2
+        
+    def calculate_surface_gravity(self):
+        """Calculate surface gravity"""
+        G = 6.67430e-11
+        self.surface_gravity = G * self.mass / self.radius**2
+
+class BlackHole(CelestialBody):
+    def __init__(self, name="Black Hole", mass=1.989e30):
+        super().__init__(name, "black_hole")
+        self.mass = mass
+        self.schwarzschild_radius = 2 * 6.67430e-11 * mass / (299792458**2)
+        self.radius = self.schwarzschild_radius * 3  # visual radius
+        self.accretion_disk = True
+        self.color = (0, 0, 0)  # black
+        self.event_horizon_color = (100, 0, 100)  # purple for accretion disk
+        
+    def draw(self, surface, camera):
+        """Special drawing for black hole with accretion disk"""
+        super().draw(surface, camera)
+        
+        # draw accretion disk
+        screen_pos = camera.world_to_screen(self.position)
+        disk_radius = camera.scale * self.schwarzschild_radius * 5
+        
+        # create accretion disk effect
+        for i in range(3):
+            radius = disk_radius * (i + 1) / 3
+            alpha = 100 - i * 30
+            color = (*self.event_horizon_color[:3], alpha)
+            
+            disk_surface = pygame.Surface((int(radius*2), int(radius*2)), pygame.SRCALPHA)
+            pygame.draw.circle(disk_surface, color, (int(radius), int(radius)), int(radius), 2)
+            surface.blit(disk_surface, (screen_pos.x - radius, screen_pos.y - radius))
+            
+            
+class SolarSystem:
+    """Container for multiple celestial bodies"""
+    
+    def __init__(self, name="Solar System"):
+        self.name = name
+        self.bodies = []
+        self.central_star = None
+        self.time = 0.0  # simulation time in seconds
+        self.timestep = 3600  # default 1h
+        
+    def add_body(self, body, set_as_central=False):
+        """Add a body to the system"""
+        self.bodies.append(body)
+        
+        if set_as_central or (body.body_type == "star" and not self.central_star):
+            self.central_star = body
+            body.fixed_position = True
+    
+    def remove_body(self, body_name):
+        """Remove a body by name"""
+        for i, body in enumerate(self.bodies):
+            if body.name == body_name:
+                if body == self.central_star:
+                    self.central_star = None
+                del self.bodies[i]
+                return True
+        return False
+    
+    def get_body(self, name):
+        """Get body by name"""
+        for body in self.bodies:
+            if body.name == name:
+                return body
+        return None
+    
+    def calculate_total_energy(self):
+        """Calculate total kinetic + potential energy of the system"""
+        total_energy = 0
+        G = 6.67430e-11
+        
+        for i, body1 in enumerate(self.bodies):
+            # kinetic energy
+            v2 = body1.velocity.magnitude() ** 2
+            kinetic = 0.5 * body1.mass * v2
+            total_energy += kinetic
+            
+            # potential energy (pairwise)
+            for j, body2 in enumerate(self.bodies[i+1:], i+1):
+                distance = body1.position.distance(body2.position)
+                if distance > 0:
+                    potential = -G * body1.mass * body2.mass / distance
+                    total_energy += potential
+        
+        return total_energy
+    
+    def calculate_center_of_mass(self):
+        """Calculate the center of mass of the system"""
+        total_mass = 0
+        com = Vector2(0, 0)
+        
+        for body in self.bodies:
+            total_mass += body.mass
+            com = com + body.position * body.mass
+        
+        if total_mass > 0:
+            com = com / total_mass
+        
+        return com, total_mass
+    
+    def to_dict(self):
+        """Convert system to dictionary for saving"""
+        return {
+            'name': self.name,
+            'time': self.time,
+            'timestep': self.timestep,
+            'bodies': [body.to_dict() for body in self.bodies],
+            'central_star': self.central_star.name if self.central_star else None,
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        """Create system from dictionary"""
+        system = cls(data['name'])
+        system.time = data.get('time', 0)
+        system.timestep = data.get('timestep', 3600)
+        
+        bodies_dict = {}
+        for body_data in data['bodies']:
+            body = CelestialBody.from_dict(body_data)
+            system.add_body(body)
+            bodies_dict[body.name] = body
+        
+        # establish parent links
+        for body_data in data['bodies']:
+            if body_data.get('parent'):
+                body = bodies_dict[body_data['name']]
+                body.parent = bodies_dict.get(body_data['parent'])
+        
+        # set central star
+        if data.get('central_star'):
+            system.central_star = bodies_dict.get(data['central_star'])
+        
+        return system

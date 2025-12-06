@@ -9,7 +9,7 @@ class NewtonianPhysics:
     def __init__(self, gravitational_constant=G_NEWTONIAN):
         self.G = gravitational_constant
         self.enable_collisions = False
-        self.softening_length = 1e3  # prevent weird stuff
+        self.softening_length = 1e3  # should prevent weird stuff
     
     def calculate_gravity(self, body1, body2):
         """Calculate gravitational force between two bodies"""
