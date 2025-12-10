@@ -1,0 +1,41 @@
+{
+  "name": "Binary Star System",
+  "time": 0,
+  "timestep": 3600,
+  "central_star": null,
+  "bodies": [
+    {
+      "name": "Alpha Star",
+      "body_type": "star",
+      "mass": 1.5e30,
+      "radius": 8.0e8,
+      "density": 1200,
+      "position": [-2.0e11, 0],
+      "velocity": [0, 15000],
+      "color": [255, 200, 100],
+      "fixed_position": false
+    },
+    {
+      "name": "Beta Star",
+      "body_type": "star",
+      "mass": 1.0e30,
+      "radius": 6.5e8,
+      "density": 1200,
+      "position": [2.0e11, 0],
+      "velocity": [0, -22500],
+      "color": [255, 150, 100],
+      "fixed_position": false
+    },
+    {
+      "name": "Habitable Planet",
+      "body_type": "planet",
+      "mass": 5.972e24,
+      "radius": 6.371e6,
+      "density": 5514,
+      "position": [5.0e11, 0],
+      "velocity": [0, 18000],
+      "color": [100, 200, 255],
+      "parent": null
+    }
+  ]
+}

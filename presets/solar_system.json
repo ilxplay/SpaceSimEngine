@@ -1,0 +1,74 @@
+{
+  "name": "Our Solar System",
+  "time": 0,
+  "timestep": 3600,
+  "central_star": "Sun",
+  "bodies": [
+    {
+      "name": "Sun",
+      "body_type": "star",
+      "mass": 1.989e30,
+      "radius": 6.957e8,
+      "density": 1408,
+      "position": [0, 0],
+      "velocity": [0, 0],
+      "color": [255, 255, 100],
+      "fixed_position": true
+    },
+    {
+      "name": "Mercury",
+      "body_type": "planet",
+      "mass": 3.301e23,
+      "radius": 2.439e6,
+      "density": 5427,
+      "position": [5.791e10, 0],
+      "velocity": [0, 47360],
+      "color": [150, 150, 150],
+      "parent": "Sun"
+    },
+    {
+      "name": "Venus",
+      "body_type": "planet",
+      "mass": 4.867e24,
+      "radius": 6.051e6,
+      "density": 5243,
+      "position": [1.082e11, 0],
+      "velocity": [0, 35020],
+      "color": [255, 200, 100],
+      "parent": "Sun"
+    },
+    {
+      "name": "Earth",
+      "body_type": "planet",
+      "mass": 5.972e24,
+      "radius": 6.371e6,
+      "density": 5514,
+      "position": [1.496e11, 0],
+      "velocity": [0, 29780],
+      "color": [100, 150, 255],
+      "parent": "Sun"
+    },
+    {
+      "name": "Mars",
+      "body_type": "planet",
+      "mass": 6.39e23,
+      "radius": 3.389e6,
+      "density": 3933,
+      "position": [2.279e11, 0],
+      "velocity": [0, 24100],
+      "color": [255, 100, 100],
+      "parent": "Sun"
+    },
+    {
+      "name": "Jupiter",
+      "body_type": "gas_giant",
+      "mass": 1.898e27,
+      "radius": 6.991e7,
+      "density": 1326,
+      "position": [7.785e11, 0],
+      "velocity": [0, 13070],
+      "color": [255, 200, 100],
+      "parent": "Sun"
+    }
+  ]
+}
